@@ -59,13 +59,14 @@ echo  ║  Versao nova:   !REMOTE_VER!                             ║
 echo  ╚════════════════════════════════════════════════════════════╝
 echo.
 set /p ATUALIZAR="  Deseja atualizar agora? (S/N): "
-if /i "!ATUALIZAR!" neq "S" goto :checar_instalacao
+if /i "!ATUALIZAR!" neq "S" goto :checar_integridade
 
 :: ────────────────────────────────────────────
-::  BAIXAR E APLICAR ATUALIZAÇÃO
+::  BAIXAR E APLICAR ATUALIZAÇÃO / RESTAURAÇÃO
 :: ────────────────────────────────────────────
+:fazer_download
 echo.
-echo  [*] Baixando atualizacao !REMOTE_VER!...
+echo  [*] Baixando arquivos do repositorio...
 
 set TEMP_ZIP=%TEMP%\gsc_update_%RANDOM%.zip
 set TEMP_DIR=%TEMP%\gsc_update_%RANDOM%
@@ -95,12 +96,37 @@ robocopy "!EXTRACTED!" "%WEB_DIR%" /E /NFL /NDL /NJH /NJS ^
 if exist "%TEMP_ZIP%" del /f /q "%TEMP_ZIP%" >nul 2>&1
 if exist "%TEMP_DIR%" rmdir /s /q "%TEMP_DIR%" >nul 2>&1
 
+if "!PRECISA_RESTAURAR!"=="1" (
+    echo  [✓] Arquivos restaurados com sucesso!
+    echo.
+    goto :checar_instalacao
+)
+
 echo  [✓] Atualizacao aplicada! Reiniciando...
 echo.
 
 :: Reinicia o iniciar.bat atualizado e sai do atual
 start "" "%WEB_DIR%iniciar.bat"
 exit /b 0
+
+:: ════════════════════════════════════════════
+::  VERIFICAÇÃO DE INTEGRIDADE DE ARQUIVOS
+:: ════════════════════════════════════════════
+:checar_integridade
+set PRECISA_RESTAURAR=0
+if not exist "%WEB_DIR%static"    set PRECISA_RESTAURAR=1
+if not exist "%WEB_DIR%templates" set PRECISA_RESTAURAR=1
+if not exist "%WEB_DIR%app.py"    set PRECISA_RESTAURAR=1
+
+if "!PRECISA_RESTAURAR!"=="1" (
+    echo.
+    echo  ╔════════════════════════════════════════════════════════════╗
+    echo  ║  ⚠  Arquivos do sistema estao faltando!                  ║
+    echo  ║  Restaurando automaticamente do repositorio...            ║
+    echo  ╚════════════════════════════════════════════════════════════╝
+    echo.
+    goto :fazer_download
+)
 
 :: ════════════════════════════════════════════
 ::  INSTALAÇÃO (primeira vez, sem .venv)
