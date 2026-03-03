@@ -18,7 +18,7 @@ echo  ============================================================
 echo.
 
 :: URL do repositório
-set REPO_URL=https://github.com/diegofornalha/gsc-indexing-manager.git
+set REPO_URL=https://github.com/diego-anselmo/gsc-indexing-manager.git
 set WEB_DIR=%~dp0
 
 :: ────────────────────────────────────────────
