@@ -104,6 +104,11 @@ if "!PRECISA_RESTAURAR!"=="1" (
 
 echo  [✓] Atualizacao aplicada com sucesso!
 echo.
+
+:: Grava a nova versão no arquivo local
+echo !REMOTE_VER!> "%LOCAL_VERSION_FILE%"
+echo  [✓] Versao !REMOTE_VER! registrada localmente.
+echo.
 echo  [i] Iniciando com a nova versao...
 echo.
 goto :checar_instalacao
