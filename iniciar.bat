@@ -102,12 +102,11 @@ if "!PRECISA_RESTAURAR!"=="1" (
     goto :checar_instalacao
 )
 
-echo  [✓] Atualizacao aplicada! Reiniciando...
+echo  [✓] Atualizacao aplicada com sucesso!
 echo.
-
-:: Reinicia o iniciar.bat atualizado e sai do atual
-start "" "%WEB_DIR%iniciar.bat"
-exit /b 0
+echo  [i] Iniciando com a nova versao...
+echo.
+goto :checar_instalacao
 
 :: ════════════════════════════════════════════
 ::  VERIFICAÇÃO DE INTEGRIDADE DE ARQUIVOS
