@@ -31,7 +31,7 @@ Interface web para gerenciamento de indexação no Google Search Console. Analis
 ### Opção 2 — Via Git (clone)
 
 ```bash
-git clone https://github.com/diegofornalha/gsc-indexing-manager.git
+git clone https://github.com/diego-anselmo/gsc-indexing-manager.git
 cd gsc-indexing-manager
 ```
 
