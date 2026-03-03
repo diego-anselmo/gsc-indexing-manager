@@ -17,105 +17,87 @@ echo.
 echo  ============================================================
 echo.
 
-:: URL do repositório
-set REPO_URL=https://github.com/diego-anselmo/gsc-indexing-manager.git
+:: Configurações
+set REPO_ZIP=https://github.com/diego-anselmo/gsc-indexing-manager/archive/refs/heads/main.zip
 set WEB_DIR=%~dp0
+set TEMP_ZIP=%TEMP%\gsc_update_%RANDOM%.zip
+set TEMP_DIR=%TEMP%\gsc_update_%RANDOM%
 
 :: ────────────────────────────────────────────
-::  PASSO 1: Verificar Git
+::  PASSO 1: Verificar conexão com internet
 :: ────────────────────────────────────────────
-echo  [PASSO 1/3] Verificando Git...
+echo  [PASSO 1/3] Verificando conexao com a internet...
 echo.
 
-where git >nul 2>&1
+powershell -Command "try { (New-Object Net.WebClient).DownloadString('https://github.com') | Out-Null; exit 0 } catch { exit 1 }" >nul 2>&1
 if %errorlevel% neq 0 (
     echo  ╔════════════════════════════════════════════════════════════╗
-    echo  ║  ⚠  Git NAO encontrado no seu computador!               ║
+    echo  ║  ⚠  Sem conexao com a internet!                         ║
     echo  ╚════════════════════════════════════════════════════════════╝
     echo.
-    echo  O Git e necessario para atualizar o sistema.
+    echo  Verifique sua conexao e tente novamente.
     echo.
-    echo  ┌──────────────────────────────────────────────────────────┐
-    echo  │  Baixe em: https://git-scm.com/download/win             │
-    echo  │                                                         │
-    echo  │  Apos instalar, execute este atualizador novamente.     │
-    echo  └──────────────────────────────────────────────────────────┘
+    pause
+    exit /b 1
+)
+echo  [✓] Conexao OK.
+echo.
+
+:: ────────────────────────────────────────────
+::  PASSO 2: Baixar e aplicar atualização
+:: ────────────────────────────────────────────
+echo  [PASSO 2/3] Baixando atualizacao do GitHub...
+echo.
+
+:: Baixa o ZIP usando PowerShell (nativo no Windows)
+powershell -Command "try { $p = New-Object System.Net.WebClient; $p.Headers.Add('User-Agent', 'Mozilla/5.0'); $p.DownloadFile('%REPO_ZIP%', '%TEMP_ZIP%'); exit 0 } catch { Write-Host $_.Exception.Message; exit 1 }"
+if %errorlevel% neq 0 (
+    echo  [ERRO] Nao foi possivel baixar a atualizacao.
+    echo  Tente novamente em alguns instantes.
     echo.
-    set /p OPEN_GIT="  Deseja abrir o site para download do Git? (S/N): "
-    if /i "!OPEN_GIT!"=="S" (
-        start https://git-scm.com/download/win
-    )
+    pause
+    exit /b 1
+)
+echo  [✓] Download concluido.
+echo.
+
+echo  [*] Extraindo arquivos...
+
+:: Extrai o ZIP
+powershell -Command "try { Expand-Archive -Path '%TEMP_ZIP%' -DestinationPath '%TEMP_DIR%' -Force; exit 0 } catch { Write-Host $_.Exception.Message; exit 1 }"
+if %errorlevel% neq 0 (
+    echo  [ERRO] Falha ao extrair o arquivo baixado.
+    if exist "%TEMP_ZIP%" del /f /q "%TEMP_ZIP%"
     echo.
     pause
     exit /b 1
 )
 
-for /f "tokens=*" %%i in ('git --version') do set GIT_VER=%%i
-echo  [✓] !GIT_VER! encontrado.
-echo.
+:: O GitHub extrai numa subpasta com o nome do repo + branch (gsc-indexing-manager-main)
+set EXTRACTED=%TEMP_DIR%\gsc-indexing-manager-main
 
-:: ────────────────────────────────────────────
-::  PASSO 2: Baixar atualização
-:: ────────────────────────────────────────────
-echo  [PASSO 2/3] Baixando atualizacao...
-echo.
-
-:: Verifica se já é um repositório git
-if exist "%WEB_DIR%.git" (
-    :: Já tem .git — apenas atualiza
-    echo  [*] Repositorio git encontrado. Atualizando...
+if not exist "%EXTRACTED%" (
+    echo  [ERRO] Estrutura do arquivo inesperada.
+    if exist "%TEMP_ZIP%" del /f /q "%TEMP_ZIP%"
+    if exist "%TEMP_DIR%" rmdir /s /q "%TEMP_DIR%"
     echo.
-    cd /d "%WEB_DIR%"
-    git fetch origin >nul 2>&1
-    if %errorlevel% neq 0 (
-        echo  [ERRO] Nao foi possivel conectar ao repositorio.
-        echo  Verifique sua conexao com a internet e tente novamente.
-        echo.
-        pause
-        exit /b 1
-    )
-    git reset --hard origin/main >nul 2>&1
-    if %errorlevel% neq 0 (
-        echo  [ERRO] Falha ao aplicar atualizacao.
-        echo.
-        pause
-        exit /b 1
-    )
-    echo  [✓] Codigo atualizado com sucesso!
-) else (
-    :: Não tem .git — clona em pasta temp e copia os arquivos
-    echo  [*] Primeira atualizacao via Git. Clonando repositorio...
-    echo.
-
-    set TEMP_DIR=%WEB_DIR%_temp_update_gsc_
-    if exist "!TEMP_DIR!" rmdir /s /q "!TEMP_DIR!"
-
-    git clone --depth=1 "%REPO_URL%" "!TEMP_DIR!"
-    if %errorlevel% neq 0 (
-        echo.
-        echo  [ERRO] Nao foi possivel clonar o repositorio.
-        echo  Verifique sua conexao com a internet e tente novamente.
-        echo.
-        if exist "!TEMP_DIR!" rmdir /s /q "!TEMP_DIR!"
-        pause
-        exit /b 1
-    )
-
-    echo.
-    echo  [*] Aplicando atualizacao (preservando dados locais)...
-    echo.
-
-    :: Copia arquivos novos, excluindo dados e credenciais sensíveis
-    robocopy "!TEMP_DIR!" "%WEB_DIR%" /E /NFL /NDL /NJH /NJS ^
-        /XF client_secrets.json token.json *.pickle ^
-        /XD .venv data __pycache__ .git instalador >nul 2>&1
-
-    :: Limpa pasta temporária
-    rmdir /s /q "!TEMP_DIR!"
-
-    echo  [✓] Arquivos atualizados com sucesso!
+    pause
+    exit /b 1
 )
 
+echo  [*] Aplicando atualizacao (preservando dados locais)...
+echo.
+
+:: Copia os arquivos, preservando credenciais e dados locais
+robocopy "%EXTRACTED%" "%WEB_DIR%" /E /NFL /NDL /NJH /NJS ^
+    /XF client_secrets.json token.json *.pickle *.db *.sqlite ^
+    /XD .venv data __pycache__ >nul 2>&1
+
+:: Limpa arquivos temporários
+del /f /q "%TEMP_ZIP%" >nul 2>&1
+rmdir /s /q "%TEMP_DIR%" >nul 2>&1
+
+echo  [✓] Arquivos atualizados com sucesso!
 echo.
 
 :: ────────────────────────────────────────────
@@ -124,7 +106,6 @@ echo.
 echo  [PASSO 3/3] Atualizando dependencias Python...
 echo.
 
-:: Verifica se o ambiente virtual existe
 if not exist "%WEB_DIR%.venv" (
     echo  [!] Ambiente virtual nao encontrado.
     echo  Re-execute o instalador antes de iniciar o sistema.
