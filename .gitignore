@@ -1,0 +1,42 @@
+# Credenciais OAuth - NUNCA versionar
+client_secrets.json
+token.json
+*.pickle
+
+# Banco de dados e dados locais
+data/
+*.db
+*.sqlite
+*.sqlite3
+
+# Ambiente virtual Python
+.venv/
+venv/
+env/
+
+# Cache Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Arquivos de build/distribuição
+instalador.zip
+dist/
+build/
+*.egg-info/
+
+# IDEs e editores
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log

@@ -1,0 +1,49 @@
+╔════════════════════════════════════════════════════════════╗
+║                                                          ║
+║     ⚙  GSC Indexing Manager - Guia de Instalação        ║
+║                                                          ║
+╚════════════════════════════════════════════════════════════╝
+
+COMO INSTALAR
+─────────────
+1. Clique duas vezes no arquivo "instalar.bat"
+2. Siga as instruções na tela
+3. Pronto! Um atalho será criado na sua Área de Trabalho
+
+O QUE SERÁ INSTALADO
+─────────────────────
+• Python (caso não esteja instalado)
+• Ambiente virtual isolado (não afeta outros programas)
+• Bibliotecas necessárias:
+   - pandas (manipulação de dados)
+   - google-api-python-client (API do Google)
+   - google-auth-oauthlib (autenticação)
+   - google-auth-httplib2 (conexão HTTP)
+   - openpyxl (geração de relatórios Excel)
+   - requests (requisições HTTP)
+   - lxml (processamento XML/sitemaps)
+   - flask (interface web)
+
+APÓS A INSTALAÇÃO
+──────────────────
+Para abrir o sistema:
+  • Clique 2x no atalho "GSC Indexing Manager" na Área de Trabalho
+  • Ou execute o arquivo "iniciar.bat" na pasta web
+
+O sistema abrirá automaticamente no navegador em:
+  http://localhost:5000
+
+REQUISITOS
+──────────
+• Windows 10 ou superior
+• Conexão com a internet (para baixar dependências)
+• Arquivo client_secrets.json configurado (credenciais Google)
+
+PROBLEMAS?
+──────────
+• Se o Python não for encontrado após a instalação:
+  Feche e abra o terminal novamente, depois execute o instalador de novo.
+
+• Se houver erro de credenciais:
+  Verifique se o arquivo client_secrets.json está na pasta correta
+  e se a Google Indexing API está ativada no Google Cloud Console.
